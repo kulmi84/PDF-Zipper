@@ -12,7 +12,7 @@
 - [ ] Paketsignierung: vorhandenes Code-Signing-Zertifikat oder internes Testzertifikat? Publisher im Manifest muss exakt zum Zertifikat passen. Keine privaten Schlüssel im Repository.
 - [ ] Zielarchitektur x64 zunächst ausreichend oder zusätzlich ARM64?
 - [ ] Unterschiedliche Seitenzahlen: derzeit sicherer Abbruch. Soll eine einzelne fehlende letzte Rückseite später erlaubt werden?
-- [ ] Vollständige Drittanbieter-Lizenzen aus dem tatsächlichen Build ins Paket aufnehmen.
+- [ ] Automatisch kopierte Drittanbieter-Lizenzen aus dem tatsächlichen Build auf Vollständigkeit prüfen.
 - [ ] CI: C++-Build ohne Warnungen, PDF-Tests und MakeAppx-Validierung erfolgreich.
 - [ ] Windows-11-Test auf sauberem Gerät: signiertes Paket installieren; Menü direkt sichtbar, nur bei zwei PDFs; deutsch/englisch erkannte Namen und Auswahl testen.
 - [ ] Unklarer Name: Escape und Fenster schließen erzeugen keine Datei.

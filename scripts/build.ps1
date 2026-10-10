@@ -37,6 +37,20 @@ foreach ($item in @(@('StoreLogo',50), @('Logo44',44), @('Logo150',150))) {
     } finally { $graphics.Dispose(); $bitmap.Dispose() }
 }
 Copy-Item "$root/LICENSE", "$root/THIRD-PARTY-NOTICES.md" -Destination $stage
+$licenses = New-Item -ItemType Directory -Force "$stage/licenses"
+Copy-Item "$root/licenses/*" -Destination $licenses
+$dependencyManifest = Get-Content -Raw "$root/src/PdfZipper/obj/project.assets.json" | ConvertFrom-Json
+foreach ($library in $dependencyManifest.libraries.PSObject.Properties) {
+    foreach ($folder in $dependencyManifest.packageFolders.PSObject.Properties.Name) {
+        $package = Join-Path $folder $library.Value.path
+        if (Test-Path $package) {
+            foreach ($notice in Get-ChildItem -LiteralPath $package -Recurse -File | Where-Object { $_.Name -match '^(LICENSE|THIRD.?PARTY.?NOTICES)' }) {
+                $destination = Join-Path $licenses ($library.Name.Replace('/', '-') + '-' + $notice.Name)
+                Copy-Item -LiteralPath $notice.FullName -Destination $destination
+            }
+        }
+    }
+}
 $sdkRoot = "${env:ProgramFiles(x86)}/Windows Kits/10/bin"
 $makeappx = Get-ChildItem "$sdkRoot/*/x64/makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1
 if (!$makeappx) { throw 'Windows SDK mit makeappx.exe fehlt.' }
