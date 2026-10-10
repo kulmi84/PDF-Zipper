@@ -9,7 +9,9 @@ public static class Zipper
     private static readonly Regex Front = new(@"(^|[\W_])(front|fronts|vorderseite[n]?|vorne|recto)(?=$|[\W_])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     private static readonly Regex Back = new(@"(^|[\W_])(back|backs|rückseite[n]?|rueckseite[n]?|hinten|verso)(?=$|[\W_])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
-    // Return the front index only if the two filenames give consistent evidence.
+    private static readonly Regex NumberedScan = new(@"^(?<prefix>[^0-9]*)(?<number>[0-9]+)(?<suffix>[^0-9]*)$", RegexOptions.CultureInvariant);
+
+    // Explicit roles take precedence over consecutive scanner counters.
     public static int? DetectFront(string first, string second)
     {
         int Role(string path)
@@ -21,20 +23,32 @@ public static class Zipper
         var a = Role(first); var b = Role(second);
         if (a == 1 && b == -1) return 0;
         if (a == -1 && b == 1) return 1;
+        // Incomplete or contradictory role words must still prompt the user.
+        var firstName = Path.GetFileNameWithoutExtension(first);
+        var secondName = Path.GetFileNameWithoutExtension(second);
+        if (Front.IsMatch(firstName) || Back.IsMatch(firstName) || Front.IsMatch(secondName) || Back.IsMatch(secondName)) return null;
+        var x = NumberedScan.Match(firstName);
+        var y = NumberedScan.Match(secondName);
+        if (!x.Success || !y.Success ||
+            !string.Equals(x.Groups["prefix"].Value, y.Groups["prefix"].Value, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(x.Groups["suffix"].Value, y.Groups["suffix"].Value, StringComparison.OrdinalIgnoreCase)) return null;
+        var n = System.Numerics.BigInteger.Parse(x.Groups["number"].Value, System.Globalization.CultureInfo.InvariantCulture);
+        var m = System.Numerics.BigInteger.Parse(y.Groups["number"].Value, System.Globalization.CultureInfo.InvariantCulture);
+        if (System.Numerics.BigInteger.Abs(n - m) == 1) return n < m ? 0 : 1;
         return null;
     }
 
-    public static string[] Validate(string[] paths)
+    public static string[] Validate(string[] paths, bool concatenate = false)
     {
-        if (paths.Length != 2) throw new InvalidOperationException("Bitte genau zwei PDF-Dateien markieren.");
+        if (concatenate ? paths.Length < 2 : paths.Length != 2) throw new InvalidOperationException(concatenate ? "Bitte mindestens zwei PDF-Dateien markieren." : "Bitte genau zwei PDF-Dateien markieren.");
         var full = paths.Select(Path.GetFullPath).ToArray();
-        if (string.Equals(full[0], full[1], StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Bitte zwei unterschiedliche PDF-Dateien auswählen.");
+        if (full.Distinct(StringComparer.OrdinalIgnoreCase).Count() != full.Length)
+            throw new InvalidOperationException("Bitte unterschiedliche PDF-Dateien auswählen.");
         foreach (var path in full)
             if (!File.Exists(path) || !string.Equals(Path.GetExtension(path), ".pdf", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Beide Dateien müssen vorhandene PDF-Dateien sein.");
-        if (!string.Equals(Path.GetDirectoryName(full[0]), Path.GetDirectoryName(full[1]), StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Beide PDF-Dateien müssen im selben Ordner liegen.");
+                throw new InvalidOperationException("Alle Dateien müssen vorhandene PDF-Dateien sein.");
+        if (full.Any(path => !string.Equals(Path.GetDirectoryName(full[0]), Path.GetDirectoryName(path), StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException("Alle PDF-Dateien müssen im selben Ordner liegen.");
         return full;
     }
 
@@ -54,7 +68,27 @@ public static class Zipper
             result.AddPage(f.Pages[i]);
             result.AddPage(b.Pages[b.PageCount - 1 - i]);
         }
-        var directory = Path.GetDirectoryName(inputs[0])!;
+        return Save(result, inputs[0], "_verzahnt");
+    }
+
+    public static string Concatenate(params string[] paths)
+    {
+        var inputs = Validate(paths, concatenate: true);
+        using var result = new PdfDocument();
+        result.Info.Title = "Zusammengeführte PDFs";
+        foreach (var path in inputs)
+        {
+            using var input = PdfReader.Open(path, PdfDocumentOpenMode.Import);
+            if (input.SecuritySettings.IsEncrypted || input.PageCount == 0)
+                throw new InvalidOperationException("Bitte ungeschützte PDFs mit mindestens einer Seite verwenden.");
+            foreach (var page in input.Pages) result.AddPage(page);
+        }
+        return Save(result, inputs[0], "_zusammengeführt");
+    }
+
+    private static string Save(PdfDocument result, string first, string ending)
+    {
+        var directory = Path.GetDirectoryName(first)!;
         // Complete the PDF first; publish with a non-overwriting, same-directory move.
         string temporary = Path.Combine(directory, $".pdf-zipper-{Guid.NewGuid():N}.tmp");
         try
@@ -64,7 +98,7 @@ public static class Zipper
                 result.Save(stream, false);
                 stream.Flush(true);
             }
-            string stem = Path.GetFileNameWithoutExtension(inputs[0]) + "_verzahnt";
+            string stem = Path.GetFileNameWithoutExtension(first) + ending;
             for (int suffix = 0; suffix < 10000; suffix++)
             {
                 var output = Path.Combine(directory, stem + (suffix == 0 ? "" : $" ({suffix})") + ".pdf");

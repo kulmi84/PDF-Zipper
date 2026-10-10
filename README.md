@@ -1,6 +1,6 @@
 # PDF-Zipper
 
-Zwei Scan-PDFs im Windows-11-Explorer markieren → Rechtsklick → **PDFs verzahnen**.
+Zwei Scan-PDFs im Windows-11-Explorer markieren → Rechtsklick → **PDF-Zipper** → **PDFs verzahnen**.
 
 PDF-Zipper kombiniert Vorderseiten in normaler Reihenfolge mit Rückseiten in umgekehrter Reihenfolge. Beispiel:
 
@@ -12,31 +12,43 @@ PDF-Zipper kombiniert Vorderseiten in normaler Reihenfolge mit Rückseiten in um
 
 ## Bedienung
 
-Beide Dateien müssen im selben Ordner liegen und gleich viele Seiten enthalten. Der Eintrag erscheint nur bei genau zwei PDF-Dateien. Die Reihenfolge der Explorer-Auswahl spielt keine Rolle.
+Beide Dateien müssen im selben Ordner liegen. Gleiche Seitenzahlen sind nur beim Verzahnen erforderlich. Der Eintrag erscheint bei mindestens zwei PDF-Dateien. Bei genau zwei sind beide Funktionen verfügbar; bei mehr als zwei wird nur **PDFs zusammenführen** angeboten. Die Reihenfolge der Explorer-Auswahl spielt keine Rolle.
 
 Eindeutige Wörter im Dateinamen werden erkannt: `Vorderseite`, `Vorderseiten`, `vorne`, `front`, `fronts`, `recto` sowie `Rückseite`, `Rückseiten`, `Rueckseite`, `Rueckseiten`, `hinten`, `back`, `backs`, `verso`. Beide Namen müssen übereinstimmende Hinweise geben. Beispiel: `Scan_Vorderseiten.pdf` und `Scan_Rückseiten.pdf`.
 
 Bei unklaren oder widersprüchlichen Namen öffnet sich eine kleine Auswahl: einmal auf die Datei mit den Vorderseiten klicken. Mit Escape oder „Abbrechen“ wird nichts geschrieben.
 
+Auch fortlaufende Scan-Nummern werden erkannt: `en0018.pdf` und `en0019.pdf` oder `18.pdf` und `19.pdf`. Die kleinere Nummer gilt als Vorderseite (zuerst gescannte Datei). Das gilt nur für direkt aufeinanderfolgende Nummern mit identischem Text davor und danach und genau einem Zahlenblock pro Name. Eindeutige Vorder-/Rückseiten-Wörter haben Vorrang; bei widersprüchlichen Angaben bleibt die Auswahl erhalten.
+
 Das Ergebnis liegt im selben Ordner: `<Vorderseitenname>_verzahnt.pdf`. Existiert dieser Name bereits, folgen ` (1)`, ` (2)` usw. Vorhandene Dateien und Originale werden niemals überschrieben. Erst die fertig geschriebene PDF wird unter ihrem endgültigen Namen sichtbar. Erfolgreiche Aufrufe enden ohne weiteren Dialog.
 
 Keine Hauptoberfläche, kein Autostart, kein eigener Hintergrunddienst, keine Netzwerkanfragen oder Telemetrie. Die Explorer-Erweiterung übergibt nur die Auswahl; die PDF-Verarbeitung läuft in einem eigenen Prozess.
+
+## PDFs zusammenführen
+
+Rechtsklick → **PDF-Zipper** → **PDFs zusammenführen** öffnet einen kompakten Dialog im hellen oder dunklen Windows-Design mit einer nummerierten Liste aller ausgewählten Dateien. Datei markieren und mit **Nach oben** oder **Nach unten** umsortieren; **Zusammenführen** bestätigt, Escape oder **Abbrechen** schreibt nichts. Zuerst werden alle Seiten der ersten Datei, danach alle Seiten der weiteren Dateien in ihrer ursprünglichen Reihenfolge übernommen. Unterschiedliche Seitenzahlen sind erlaubt.
+
+Ausgabe: `<ErsteDatei>_zusammengeführt.pdf` im selben Ordner, bei Namenskollision mit fortlaufendem Zusatz. Originale und vorhandene Dateien bleiben erhalten.
+
+Alle Dialoge verwenden die Windows-Einstellung für Hell/Dunkel, einschließlich der Titelleiste. Bei aktiviertem Kontrastdesign haben die Windows-Systemfarben Vorrang. Die Fenster sind kompakt und skalieren mit der Bildschirm-DPI.
 
 ## Installation und Status
 
 Ziel: Windows 11, x64. Der Eintrag soll direkt im neuen Kontextmenü erscheinen. Dafür wird die von Microsoft vorgesehene Kombination aus `IExplorerCommand` und MSIX-Registrierung verwendet. [Microsoft-Dokumentation](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/desktop-to-uwp-extensions#specify-a-context-menu-handler-for-a-file-type).
 
-**0.1.0 ist ein vorbereiteter Release-Kandidat.** Ein signiertes, auf Windows 11 geprüftes Installationspaket wird erst nach Abschluss der [Release-Prüfung](docs/RELEASE-CHECKLIST.md) freigegeben. Ein unsigniertes CI-Paket ist kein fertiger Installer.
+**Aktueller Stand: 0.1.10.** Lokal unter Windows 11 installiert und vom Nutzer geprüft. Der neue Kontextmenüeintrag und die kompakten Hell-/Dunkel-Dialoge wurden im Explorer verwendet. Ein Test auf einem frisch eingerichteten zweiten PC steht noch aus.
 
-Nach Signierung mit einem auf dem Zielgerät vertrauenswürdigen Zertifikat: MSIX doppelklicken und installieren. Bei einem internen Testzertifikat muss dessen Vertrauen ausdrücklich eingerichtet werden; das Build-Skript verändert keinen Zertifikatsspeicher. Deinstallation über Windows → Einstellungen → Apps → PDF-Zipper entfernt auch die Menüregistrierung. PDF-Ergebnisse bleiben bestehen.
+Der Installer enthält das signierte MSIX und ein **internes Testzertifikat**. Auf einem neuen PC ist eine ausdrückliche Vertrauenseinrichtung erforderlich. Es liegt noch kein öffentlich vertrauenswürdiges Herausgeberzertifikat vor. [Installationsanleitung](installer/INSTALLATION.md) · [Releases und Installer](https://github.com/kulmi84/PDF-Zipper/releases).
+
+Installer-ZIP vollständig entpacken und `Install-PDF-Zipper.cmd` doppelklicken. Bei erstmaliger Einrichtung das Zertifikatsvertrauen mit `JA` und anschließend per Windows-Administratorabfrage bestätigen. Danach läuft PDF-Zipper ohne Build-Werkzeuge und ohne installiertes .NET. Updates verwenden denselben Installer; Deinstallation über Windows-Einstellungen entfernt die Menüregistrierung. Ergebnis-PDFs bleiben erhalten.
 
 ## Grenzen
 
-- Unterschiedliche Seitenzahlen: Abbruch statt stiller Ergänzung oder Verwerfung. Eine fehlende letzte Rückseite muss vorab ergänzt werden.
+- Beim Verzahnen unterschiedliche Seitenzahlen: Abbruch statt stiller Ergänzung oder Verwerfung. Eine fehlende letzte Rückseite muss vorab ergänzt werden.
 - Verschlüsselte/passwortgeschützte und beschädigte PDFs werden abgewiesen.
 - Für Scans gedacht: Dokument-Lesezeichen, digitale Signaturen, PDF/A-Konformität und dokumentweite Formularlogik werden nicht garantiert erhalten. Originale aufbewahren.
 - Keine automatische Erkennung anhand des Seiteninhalts, keine Drehung, keine OCR und keine Dateikomprimierung.
-- Die Rückseiten-PDF wird immer umgekehrt. Bereits richtig geordnete Rückseiten vorher umsortieren.
+- Beim Verzahnen wird die Rückseiten-PDF immer umgekehrt. Bereits richtig geordnete Rückseiten vorher umsortieren.
 
 ## Entwicklung und Build
 
@@ -53,7 +65,7 @@ Für ein bereits eingerichtetes Code-Signing-Zertifikat im Zertifikatsspeicher d
 
 ```powershell
 # Beim Build -Publisher mit dem exakten Zertifikats-Subject angeben.
-./scripts/sign.ps1 -Package ./artifacts/PDF-Zipper-0.1.0.0-x64.msix -CertificateThumbprint '<Thumbprint>'
+./scripts/sign.ps1 -Package ./artifacts/PDF-Zipper-0.1.10.0-x64.msix -CertificateThumbprint '<Thumbprint>'
 ```
 
 Ein RFC-3161-Zeitstempeldienst kann mit `-TimestampUrl` angegeben werden. Das Skript signiert und prüft die Signatur; es erzeugt keine Zertifikate und richtet kein Vertrauen ein.
@@ -69,3 +81,7 @@ Die Tests prüfen Seitenreihenfolge anhand unterschiedlicher Seitengrößen, Erk
 ## Lizenz
 
 MIT, Copyright 2026 kulmi84. Bibliotheken und Laufzeit: siehe [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
+
+
+

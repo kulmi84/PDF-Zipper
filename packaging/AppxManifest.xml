@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
  IgnorableNamespaces="uap desktop4 com rescap">
- <Identity Name="kulmi84.PDFZipper" Publisher="CN=kulmi84" Version="0.1.0.0" ProcessorArchitecture="x64" />
+ <Identity Name="kulmi84.PDFZipper" Publisher="CN=kulmi84" Version="0.1.1.0" ProcessorArchitecture="x64" />
  <Properties><DisplayName>PDF-Zipper</DisplayName><PublisherDisplayName>kulmi84</PublisherDisplayName><Logo>Assets\StoreLogo.png</Logo></Properties>
  <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0" /></Dependencies>
  <Resources><Resource Language="de-de" /></Resources>
@@ -26,3 +26,7 @@
  </Applications>
  <Capabilities><rescap:Capability Name="runFullTrust" /></Capabilities>
 </Package>
+
+
+
+

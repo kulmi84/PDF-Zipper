@@ -1,5 +1,5 @@
-[CmdletBinding()]
-param([string]$Version = '0.1.0.0', [string]$Publisher = 'CN=kulmi84')
+﻿[CmdletBinding()]
+param([string]$Version = '0.1.10.0', [string]$Publisher = 'CN=kulmi84')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $stage = Join-Path $root 'artifacts/package'
@@ -20,23 +20,7 @@ Copy-Item -LiteralPath "$native/Release/PdfZipperShell.dll" -Destination $stage
 $manifest.Package.Identity.Version = $Version
 $manifest.Package.Identity.Publisher = $Publisher
 $manifest.Save("$stage/AppxManifest.xml")
-Add-Type -AssemblyName System.Drawing
-$assets = New-Item -ItemType Directory -Force "$stage/Assets"
-foreach ($item in @(@('StoreLogo',50), @('Logo44',44), @('Logo150',150))) {
-    $size = [int]$item[1]
-    $bitmap = [System.Drawing.Bitmap]::new($size, $size)
-    $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-    try {
-        $graphics.Clear([System.Drawing.Color]::FromArgb(24, 55, 84))
-        $pen = [System.Drawing.Pen]::new([System.Drawing.Color]::White, [single]($size / 10))
-        try {
-            $graphics.DrawLine($pen, [single]($size*.35), [single]($size*.2), [single]($size*.35), [single]($size*.8))
-            $graphics.DrawLine($pen, [single]($size*.65), [single]($size*.2), [single]($size*.65), [single]($size*.8))
-            $graphics.DrawLine($pen, [single]($size*.35), [single]($size*.5), [single]($size*.65), [single]($size*.5))
-        } finally { $pen.Dispose() }
-        $bitmap.Save("$assets/$($item[0]).png", [System.Drawing.Imaging.ImageFormat]::Png)
-    } finally { $graphics.Dispose(); $bitmap.Dispose() }
-}
+& "$root/scripts/generate-icons.ps1" -Destination "$stage/Assets"
 Copy-Item "$root/LICENSE", "$root/THIRD-PARTY-NOTICES.md" -Destination $stage
 $licenses = New-Item -ItemType Directory -Force "$stage/licenses"
 Copy-Item "$root/licenses/*" -Destination $licenses
@@ -57,3 +41,7 @@ $makeappx = Get-ChildItem "$sdkRoot/*/x64/makeappx.exe" | Sort-Object FullName -
 if (!$makeappx) { throw 'Windows SDK mit makeappx.exe fehlt.' }
 Run $makeappx.FullName @('pack', '/d', $stage, '/p', "$root/artifacts/PDF-Zipper-$Version-x64.msix", '/o')
 Get-FileHash "$root/artifacts/PDF-Zipper-$Version-x64.msix" -Algorithm SHA256 | Format-List
+
+
+
+
