@@ -1,4 +1,4 @@
-﻿# PDF-Zipper
+# PDF-Zipper
 
 Zwei Scan-PDFs im Windows-11-Explorer markieren → Rechtsklick → **PDF-Zipper** → **PDFs verzahnen**.
 
@@ -12,7 +12,7 @@ PDF-Zipper kombiniert Vorderseiten in normaler Reihenfolge mit Rückseiten in um
 
 ## Screenshots
 
-Windows-11-Aufnahmen aus der lokalen Entwicklung im dunklen Design. Die Dialoge folgen auch dem hellen Windows-Design. Die abschließende Gestaltung von 0.1.10 hat noch dezentere Konturen.
+Aktuelle Dialoge von PDF-Zipper 0.1.10 unter Windows 11 im dunklen Design, mit neutralen Beispieldateien. Die Dialoge folgen auch dem hellen Windows-Design.
 
 **Vorderseiten auswählen** – bei unklaren Dateinamen genügt ein Klick auf die passende PDF:
 
