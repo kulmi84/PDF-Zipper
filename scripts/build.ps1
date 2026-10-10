@@ -14,6 +14,7 @@ Run 'dotnet' @('run', '--project', "$root/tests/PdfZipper.Tests.csproj", '-c', '
 Run 'dotnet' @('publish', "$root/src/PdfZipper/PdfZipper.csproj", '-c', 'Release', '-r', 'win-x64', '--self-contained', 'true', '-p:PublishSingleFile=true', '-p:IncludeNativeLibrariesForSelfExtract=true', '-p:DebugType=None', '-o', $stage)
 Run 'cmake' @('-S', "$root/native", '-B', $native, '-A', 'x64')
 Run 'cmake' @('--build', $native, '--config', 'Release')
+Run 'ctest' @('--test-dir', $native, '-C', 'Release', '--output-on-failure')
 Copy-Item -LiteralPath "$native/Release/PdfZipperShell.dll" -Destination $stage
 [xml]$manifest = Get-Content -Raw -LiteralPath "$root/packaging/AppxManifest.xml"
 $manifest.Package.Identity.Version = $Version
