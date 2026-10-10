@@ -49,6 +49,15 @@ dotnet run --project tests/PdfZipper.Tests.csproj -c Release
 
 Der Build erstellt eine eigenständig lauffähige x64-Anwendung, eine native Shell-DLL mit statischer C++-Laufzeit und ein **unsigniertes** MSIX unter `artifacts/`. Ein installiertes .NET ist auf dem Zielgerät nicht erforderlich. Für erneute Paket-Builds einen frischen Checkout verwenden oder den vorhandenen Build-Ordner entfernen.
 
+Für ein bereits eingerichtetes Code-Signing-Zertifikat im Zertifikatsspeicher des aktuellen Benutzers:
+
+```powershell
+# Beim Build -Publisher mit dem exakten Zertifikats-Subject angeben.
+./scripts/sign.ps1 -Package ./artifacts/PDF-Zipper-0.1.0.0-x64.msix -CertificateThumbprint '<Thumbprint>'
+```
+
+Ein RFC-3161-Zeitstempeldienst kann mit `-TimestampUrl` angegeben werden. Das Skript signiert und prüft die Signatur; es erzeugt keine Zertifikate und richtet kein Vertrauen ein.
+
 GitHub Actions führt dieselben Tests und die Paketvalidierung durch. Es veröffentlicht keine Releases automatisch. Zum direkten Entwicklertest:
 
 ```powershell
