@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <shobjidl.h>
+#include <shlobj.h>
 #include <wrl.h>
 #include <vector>
 #include <string>
@@ -64,3 +65,4 @@ int wmain() {
     if (!failures) std::puts("PASS: native COM and selection checks");
     return failures ? 1 : 0;
 }
+
