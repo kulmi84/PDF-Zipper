@@ -107,7 +107,7 @@ int wmain() {
                 ComPtr<IExplorerCommand> child;
                 if (children->Next(1, &child, nullptr) != S_OK) return 11;
                 child->GetState(selected.Get(), FALSE, &state);
-                Check(state == (i == 0 ? ECS_HIDDEN : ECS_ENABLED), "Three PDFs only concatenate");
+                Check(state == static_cast<EXPCMDSTATE>(i == 0 ? ECS_HIDDEN : ECS_ENABLED), "Three PDFs only concatenate");
                 if (i == 0) Check(child->Invoke(selected.Get(), nullptr) == E_INVALIDARG, "Reject interleaving three PDFs");
             }
         }

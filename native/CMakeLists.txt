@@ -6,6 +6,10 @@ target_compile_definitions(PdfZipperShell PRIVATE UNICODE _UNICODE WIN32_LEAN_AN
 target_compile_options(PdfZipperShell PRIVATE /W4 /WX /utf-8)
 target_link_libraries(PdfZipperShell PRIVATE shlwapi shell32 ole32 advapi32)
 set_property(TARGET PdfZipperShell PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+add_custom_command(TARGET PdfZipperShell POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/../assets"
+        "$<TARGET_FILE_DIR:PdfZipperShell>/Assets")
 enable_testing()
 add_executable(ShellTests ShellTests.cpp)
 target_compile_features(ShellTests PRIVATE cxx_std_17)
