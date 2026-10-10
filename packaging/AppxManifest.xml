@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+ xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+ xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+ xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+ xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+ IgnorableNamespaces="uap desktop4 com rescap">
+ <Identity Name="kulmi84.PDFZipper" Publisher="CN=kulmi84" Version="0.1.0.0" ProcessorArchitecture="x64" />
+ <Properties><DisplayName>PDF-Zipper</DisplayName><PublisherDisplayName>kulmi84</PublisherDisplayName><Logo>Assets\StoreLogo.png</Logo></Properties>
+ <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0" /></Dependencies>
+ <Resources><Resource Language="de-de" /></Resources>
+ <Applications>
+  <Application Id="PDFZipper" Executable="PDF-Zipper.exe" EntryPoint="Windows.FullTrustApplication">
+   <uap:VisualElements DisplayName="PDF-Zipper" Description="PDF-Scans verzahnen" BackgroundColor="transparent" Square150x150Logo="Assets\Logo150.png" Square44x44Logo="Assets\Logo44.png" AppListEntry="none" />
+   <Extensions>
+    <com:Extension Category="windows.comServer"><com:ComServer>
+     <com:SurrogateServer AppId="f1f2c6c6-9fd1-4676-b6e1-c9ea32c78c2d" DisplayName="PDF-Zipper">
+      <com:Class Id="ab7df971-896a-4d3b-b98d-c694b01e7ead" Path="PdfZipperShell.dll" ThreadingModel="STA" />
+     </com:SurrogateServer>
+    </com:ComServer></com:Extension>
+    <desktop4:Extension Category="windows.fileExplorerContextMenus"><desktop4:FileExplorerContextMenus>
+     <desktop4:ItemType Type=".pdf"><desktop4:Verb Id="PdfZipper" Clsid="ab7df971-896a-4d3b-b98d-c694b01e7ead" /></desktop4:ItemType>
+    </desktop4:FileExplorerContextMenus></desktop4:Extension>
+   </Extensions>
+  </Application>
+ </Applications>
+ <Capabilities><rescap:Capability Name="runFullTrust" /></Capabilities>
+</Package>

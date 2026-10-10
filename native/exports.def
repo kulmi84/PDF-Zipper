@@ -1,0 +1,4 @@
+LIBRARY PdfZipperShell
+EXPORTS
+    DllGetClassObject PRIVATE
+    DllCanUnloadNow PRIVATE
