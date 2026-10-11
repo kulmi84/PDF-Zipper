@@ -40,7 +40,8 @@ int wmain() {
             ComPtr<IEnumExplorerCommand> children;
             Check(SUCCEEDED(command->EnumSubCommands(&children)), "Submenu enumerator");
             if (!children) return 8;
-            const wchar_t* expected[] = { L"PDFs verzahnen", L"PDFs zusammenführen" };
+            bool german = PRIMARYLANGID(GetUserDefaultUILanguage()) == LANG_GERMAN;
+            const wchar_t* expected[] = { german ? L"PDFs verzahnen" : L"Interleave PDFs", german ? L"PDFs zusammenführen" : L"Merge PDFs" };
             GUID ids[2]{};
             for (int i = 0; i < 2; i++) {
                 ComPtr<IExplorerCommand> child;

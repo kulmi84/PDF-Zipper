@@ -12,7 +12,11 @@ PDF-Zipper kombiniert Vorderseiten in normaler Reihenfolge mit Rückseiten in um
 
 ## Screenshots
 
-Aktuelle Dialoge von PDF-Zipper 0.1.10 unter Windows 11 im dunklen Design, mit neutralen Beispieldateien. Die Dialoge folgen auch dem hellen Windows-Design.
+Aktuelles Explorer-Menü und Dialoge unter Windows 11. Die Screenshots zeigen Testdateien und das helle sowie dunkle Windows-Design.
+
+![PDF-Zipper im dunklen Explorer-Menü](docs/screenshots/menu-dark.png)
+
+![PDF-Zipper im hellen Explorer-Menü](docs/screenshots/menu-light.png)
 
 **Vorderseiten auswählen** – bei unklaren Dateinamen genügt ein Klick auf die passende PDF:
 
@@ -21,6 +25,16 @@ Aktuelle Dialoge von PDF-Zipper 0.1.10 unter Windows 11 im dunklen Design, mit n
 **PDFs zusammenführen** – ausgewählte PDFs über „Nach oben“ und „Nach unten“ in die gewünschte Reihenfolge bringen:
 
 ![Reihenfolge mehrerer PDFs auswählen](docs/screenshots/reihenfolge-dark.png)
+
+![Reihenfolge im hellen Windows-Design](docs/screenshots/reihenfolge-light.png)
+
+![Vorderseitenauswahl im hellen Windows-Design](docs/screenshots/vorderseiten-light.png)
+
+**English interface (0.1.12):**
+
+![Choose PDF order in English](docs/screenshots/order-en-light.png)
+
+![Select front pages in English](docs/screenshots/front-en-dark.png)
 
 ## Bedienung
 
@@ -34,7 +48,7 @@ Auch fortlaufende Scan-Nummern werden erkannt: `en0018.pdf` und `en0019.pdf` ode
 
 Das Ergebnis liegt im selben Ordner: `<Vorderseitenname>_verzahnt.pdf`. Existiert dieser Name bereits, folgen ` (1)`, ` (2)` usw. Vorhandene Dateien und Originale werden niemals überschrieben. Erst die fertig geschriebene PDF wird unter ihrem endgültigen Namen sichtbar. Erfolgreiche Aufrufe enden ohne weiteren Dialog.
 
-Keine Hauptoberfläche, kein Autostart, kein eigener Hintergrunddienst, keine Netzwerkanfragen oder Telemetrie. Die Explorer-Erweiterung übergibt nur die Auswahl; die PDF-Verarbeitung läuft in einem eigenen Prozess.
+Die Verarbeitung wird im Explorer gestartet. Der Startmenüeintrag zeigt eine kurze Bedienhilfe. Kein Autostart, kein eigener Hintergrunddienst, keine Netzwerkanfragen oder Telemetrie. Die Explorer-Erweiterung übergibt nur die Auswahl; die PDF-Verarbeitung läuft in einem eigenen Prozess.
 
 ## PDFs zusammenführen
 
@@ -48,9 +62,9 @@ Alle Dialoge verwenden die Windows-Einstellung für Hell/Dunkel, einschließlich
 
 Ziel: Windows 11, x64. Der Eintrag soll direkt im neuen Kontextmenü erscheinen. Dafür wird die von Microsoft vorgesehene Kombination aus `IExplorerCommand` und MSIX-Registrierung verwendet. [Microsoft-Dokumentation](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/desktop-to-uwp-extensions#specify-a-context-menu-handler-for-a-file-type).
 
-**Aktueller Stand: 0.1.10.** Lokal unter Windows 11 installiert und vom Nutzer geprüft. Der neue Kontextmenüeintrag und die kompakten Hell-/Dunkel-Dialoge wurden im Explorer verwendet. Ein Test auf einem frisch eingerichteten zweiten PC steht noch aus.
+**Aktueller Entwicklungsstand: 0.1.12.** Deutsch und Englisch werden anhand der Windows-Anzeigesprache gewählt. Der lokale Build, 165 PDF-Prüfungen in drei Spracheinstellungen und die nativen COM-Auswahltests waren erfolgreich. Version 0.1.12 wurde am 11.10.2026 zur Microsoft-Store-Zertifizierung eingereicht. Die Store-Veröffentlichung erfolgt nach erfolgreicher Prüfung manuell; die App ist noch nicht im Store verfügbar. Ein Test auf einem frisch eingerichteten zweiten PC steht noch aus.
 
-Der Installer enthält das signierte MSIX und ein **internes Testzertifikat**. Auf einem neuen PC ist eine ausdrückliche Vertrauenseinrichtung erforderlich. Es liegt noch kein öffentlich vertrauenswürdiges Herausgeberzertifikat vor. [Installationsanleitung](installer/INSTALLATION.md) · [Releases und Installer](https://github.com/kulmi84/PDF-Zipper/releases).
+Der GitHub-Installer für 0.1.12 enthält das signierte MSIX und ein **internes Testzertifikat**. Auf einem neuen PC ist eine ausdrückliche Vertrauenseinrichtung erforderlich. Das Store-Paket ist für die Store-Einreichung bestimmt. [Installationsanleitung](installer/INSTALLATION.md) · [Releases und Installer](https://github.com/kulmi84/PDF-Zipper/releases).
 
 Installer-ZIP vollständig entpacken und `Install-PDF-Zipper.cmd` doppelklicken. Bei erstmaliger Einrichtung das Zertifikatsvertrauen mit `JA` und anschließend per Windows-Administratorabfrage bestätigen. Danach läuft PDF-Zipper ohne Build-Werkzeuge und ohne installiertes .NET. Updates verwenden denselben Installer; Deinstallation über Windows-Einstellungen entfernt die Menüregistrierung. Ergebnis-PDFs bleiben erhalten.
 
@@ -77,7 +91,7 @@ Für ein bereits eingerichtetes Code-Signing-Zertifikat im Zertifikatsspeicher d
 
 ```powershell
 # Beim Build -Publisher mit dem exakten Zertifikats-Subject angeben.
-./scripts/sign.ps1 -Package ./artifacts/PDF-Zipper-0.1.10.0-x64.msix -CertificateThumbprint '<Thumbprint>'
+./scripts/sign.ps1 -Package ./artifacts/PDF-Zipper-0.1.12.0-x64.msix -CertificateThumbprint '<Thumbprint>'
 ```
 
 Ein RFC-3161-Zeitstempeldienst kann mit `-TimestampUrl` angegeben werden. Das Skript signiert und prüft die Signatur; es erzeugt keine Zertifikate und richtet kein Vertrauen ein.
@@ -96,4 +110,10 @@ MIT, Copyright 2026 kulmi84. Bibliotheken und Laufzeit: siehe [THIRD-PARTY-NOTIC
 
 
 
+
+## Sprache / Language
+
+PDF-Zipper verwendet Deutsch bei deutscher Windows-Anzeigesprache und sonst Englisch. Explorer-Menü, Dialoge, Bedienhilfe, Fehlermeldungen und Ergebnisdateinamen folgen dieser Auswahl. Die Dateinamen-Erkennung unterstützt deutsche und englische Begriffe unabhängig von der Anzeigesprache. Original-Dateinamen werden nicht verändert.
+
+PDF-Zipper uses German when the Windows display language is German, and English otherwise. Explorer actions, dialogs, usage instructions, error messages and output filename suffixes follow this selection. Filename detection supports German and English terms in either language. Original filenames remain unchanged.
 

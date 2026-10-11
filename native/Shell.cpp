@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <atomic>
+static bool German() { return PRIMARYLANGID(GetUserDefaultUILanguage()) == LANG_GERMAN; }
 static HMODULE module;
 static std::atomic<long> objects{0};
 static const CLSID CommandId = {0xab7df971,0x896a,0x4d3b,{0xb9,0x8d,0xc6,0x94,0xb0,0x1e,0x7e,0xad}};
@@ -41,7 +42,7 @@ public:
     }
     ULONG STDMETHODCALLTYPE AddRef() override { return ++refs; }
     ULONG STDMETHODCALLTYPE Release() override { auto n = --refs; if (!n) delete this; return n; }
-    HRESULT STDMETHODCALLTYPE GetTitle(IShellItemArray*, PWSTR* text) override { return SHStrDupW(action == 0 ? L"PDF-Zipper" : action == 1 ? L"PDFs verzahnen" : L"PDFs zusammenführen", text); }
+    HRESULT STDMETHODCALLTYPE GetTitle(IShellItemArray*, PWSTR* text) override { return SHStrDupW(action == 0 ? L"PDF-Zipper" : action == 1 ? (German() ? L"PDFs verzahnen" : L"Interleave PDFs") : (German() ? L"PDFs zusammenführen" : L"Merge PDFs"), text); }
     HRESULT STDMETHODCALLTYPE GetIcon(IShellItemArray*, PWSTR* text) override {
         if (!text) return E_POINTER; *text = nullptr;
         std::vector<wchar_t> buffer(32768);
@@ -53,7 +54,7 @@ public:
         path = path.substr(0, path.find_last_of(L"\\/") + 1) + (light ? L"Assets\\menu-light.ico" : L"Assets\\menu-dark.ico");
         return SHStrDupW(path.c_str(), text);
     }
-    HRESULT STDMETHODCALLTYPE GetToolTip(IShellItemArray*, PWSTR* text) override { return SHStrDupW(action == 0 ? L"PDF-Werkzeuge" : action == 1 ? L"Vorderseiten und umgekehrte Rückseiten abwechselnd zusammenführen" : L"PDFs in gewählter Reihenfolge zusammenführen", text); }
+    HRESULT STDMETHODCALLTYPE GetToolTip(IShellItemArray*, PWSTR* text) override { return SHStrDupW(action == 0 ? (German() ? L"PDF-Werkzeuge" : L"PDF tools") : action == 1 ? (German() ? L"Vorderseiten und umgekehrte Rückseiten abwechselnd zusammenführen" : L"Interleave front pages with reversed back pages") : (German() ? L"PDFs in gewählter Reihenfolge zusammenführen" : L"Merge PDFs in the selected order"), text); }
     HRESULT STDMETHODCALLTYPE GetCanonicalName(GUID* id) override { if (!id) return E_POINTER; *id = CommandId; id->Data1 += action; return S_OK; }
     HRESULT STDMETHODCALLTYPE GetState(IShellItemArray* items, BOOL, EXPCMDSTATE* state) override {
         if (!state) return E_POINTER;
@@ -151,5 +152,6 @@ extern "C" HRESULT __stdcall DllCanUnloadNow() { return objects == 0 ? S_OK : S_
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID) {
     if (reason == DLL_PROCESS_ATTACH) { module = instance; DisableThreadLibraryCalls(instance); } return TRUE;
 }
+
 
 

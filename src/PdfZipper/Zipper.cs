@@ -40,15 +40,15 @@ public static class Zipper
 
     public static string[] Validate(string[] paths, bool concatenate = false)
     {
-        if (concatenate ? paths.Length < 2 : paths.Length != 2) throw new InvalidOperationException(concatenate ? "Bitte mindestens zwei PDF-Dateien markieren." : "Bitte genau zwei PDF-Dateien markieren.");
+        if (concatenate ? paths.Length < 2 : paths.Length != 2) throw new InvalidOperationException(concatenate ? Language.Text("Bitte mindestens zwei PDF-Dateien markieren.", "Please select at least two PDF files.") : Language.Text("Bitte genau zwei PDF-Dateien markieren.", "Please select exactly two PDF files."));
         var full = paths.Select(Path.GetFullPath).ToArray();
         if (full.Distinct(StringComparer.OrdinalIgnoreCase).Count() != full.Length)
-            throw new InvalidOperationException("Bitte unterschiedliche PDF-Dateien auswählen.");
+            throw new InvalidOperationException(Language.Text("Bitte unterschiedliche PDF-Dateien auswählen.", "Please select different PDF files."));
         foreach (var path in full)
             if (!File.Exists(path) || !string.Equals(Path.GetExtension(path), ".pdf", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Alle Dateien müssen vorhandene PDF-Dateien sein.");
+                throw new InvalidOperationException(Language.Text("Alle Dateien müssen vorhandene PDF-Dateien sein.", "All files must be existing PDF files."));
         if (full.Any(path => !string.Equals(Path.GetDirectoryName(full[0]), Path.GetDirectoryName(path), StringComparison.OrdinalIgnoreCase)))
-            throw new InvalidOperationException("Alle PDF-Dateien müssen im selben Ordner liegen.");
+            throw new InvalidOperationException(Language.Text("Alle PDF-Dateien müssen im selben Ordner liegen.", "All PDF files must be in the same folder."));
         return full;
     }
 
@@ -58,32 +58,32 @@ public static class Zipper
         using var f = PdfReader.Open(inputs[0], PdfDocumentOpenMode.Import);
         using var b = PdfReader.Open(inputs[1], PdfDocumentOpenMode.Import);
         if (f.SecuritySettings.IsEncrypted || b.SecuritySettings.IsEncrypted)
-            throw new InvalidOperationException("Geschützte PDFs werden nicht unterstützt. Bitte ungeschützte Kopien verwenden.");
+            throw new InvalidOperationException(Language.Text("Geschützte PDFs werden nicht unterstützt. Bitte ungeschützte Kopien verwenden.", "Protected PDFs are not supported. Please use unprotected copies."));
         if (f.PageCount == 0 || f.PageCount != b.PageCount)
-            throw new InvalidOperationException($"Die Seitenzahlen müssen gleich und größer als null sein (Vorderseiten: {f.PageCount}, Rückseiten: {b.PageCount}). Es wurde keine Ausgabe erstellt.");
+            throw new InvalidOperationException(Language.Text($"Die Seitenzahlen müssen gleich und größer als null sein (Vorderseiten: {f.PageCount}, Rückseiten: {b.PageCount}). Es wurde keine Ausgabe erstellt.", $"Page counts must be equal and greater than zero (front: {f.PageCount}, back: {b.PageCount}). No output was created."));
         using var result = new PdfDocument();
-        result.Info.Title = "Verzahnte Scans";
+        result.Info.Title = Language.Text("Verzahnte Scans", "Interleaved scans");
         for (int i = 0; i < f.PageCount; i++)
         {
             result.AddPage(f.Pages[i]);
             result.AddPage(b.Pages[b.PageCount - 1 - i]);
         }
-        return Save(result, inputs[0], "_verzahnt");
+        return Save(result, inputs[0], Language.Text("_verzahnt", "_interleaved"));
     }
 
     public static string Concatenate(params string[] paths)
     {
         var inputs = Validate(paths, concatenate: true);
         using var result = new PdfDocument();
-        result.Info.Title = "Zusammengeführte PDFs";
+        result.Info.Title = Language.Text("Zusammengeführte PDFs", "Merged PDFs");
         foreach (var path in inputs)
         {
             using var input = PdfReader.Open(path, PdfDocumentOpenMode.Import);
             if (input.SecuritySettings.IsEncrypted || input.PageCount == 0)
-                throw new InvalidOperationException("Bitte ungeschützte PDFs mit mindestens einer Seite verwenden.");
+                throw new InvalidOperationException(Language.Text("Bitte ungeschützte PDFs mit mindestens einer Seite verwenden.", "Please use unprotected PDFs with at least one page."));
             foreach (var page in input.Pages) result.AddPage(page);
         }
-        return Save(result, inputs[0], "_zusammengeführt");
+        return Save(result, inputs[0], Language.Text("_zusammengeführt", "_merged"));
     }
 
     private static string Save(PdfDocument result, string first, string ending)
@@ -105,8 +105,9 @@ public static class Zipper
                 try { File.Move(temporary, output, false); return output; }
                 catch (IOException) when (File.Exists(output)) { }
             }
-            throw new IOException("Es konnte kein freier Ausgabename gefunden werden.");
+            throw new IOException(Language.Text("Es konnte kein freier Ausgabename gefunden werden.", "No unused output filename could be found."));
         }
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
 }
+

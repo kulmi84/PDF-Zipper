@@ -1,4 +1,4 @@
-# PDF-Zipper 0.1.10 – Installation für Windows 11 x64
+# PDF-Zipper 0.1.12 – Installation für Windows 11 x64
 
 1. Das Installer-ZIP vollständig in einen Ordner entpacken.
 2. Offene PDF-Zipper-Dialoge schließen und eine laufende PDF-Verarbeitung fertig werden lassen.

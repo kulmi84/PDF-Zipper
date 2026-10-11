@@ -2,7 +2,10 @@ using PdfZipper;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using System.Security.Cryptography;
+using System.Globalization;
 
+foreach (var language in new[] { "de-DE", "en-US", "fr-FR" }) {
+CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(language);
 var root = Path.Combine(Path.GetTempPath(), "pdf-zipper-test-" + Guid.NewGuid());
 Directory.CreateDirectory(root);
 int checks = 0;
@@ -37,6 +40,10 @@ try {
     Assert(Zipper.DetectFront("front_18.pdf", "front_19.pdf") is null, "Role ambiguity beats counters");
     Assert(Zipper.DetectFront("19 Vorderseite.pdf", "18 Rückseite.pdf") == 0, "Explicit roles beat numbering");
     var output = Zipper.Merge(front, back);
+    Assert(output.EndsWith(Language.IsGerman ? "_verzahnt.pdf" : "_interleaved.pdf"), "Localized output filename");
+    try { Zipper.Validate([]); } catch (InvalidOperationException e) {
+        Assert(e.Message == (language == "de-DE" ? "Bitte genau zwei PDF-Dateien markieren." : "Please select exactly two PDF files."), "Language and English fallback");
+    }
     using (var pdf = PdfReader.Open(output, PdfDocumentOpenMode.Import)) {
         Assert(pdf.PageCount == 6, "Page count");
         for (int i = 0; i < 6; i++) Assert(Math.Abs(pdf.Pages[i].Width.Point - (101 + i)) < .01, "Order " + i);
@@ -83,3 +90,4 @@ try {
     Console.WriteLine($"PASS: {checks} checks");
 }
 finally { Directory.Delete(root, true); }
+}

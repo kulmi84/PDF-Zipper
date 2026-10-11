@@ -1,8 +1,8 @@
-﻿param([switch]$TrustOnly)
+param([switch]$TrustOnly)
 $ErrorActionPreference = 'Stop'
 $expected = '013012837D1FF2119EE33A45A33E0ABDF52AAFB3'
-$package = Join-Path $PSScriptRoot 'PDF-Zipper-0.1.10.0-x64-test.msix'
-if ((Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash -ne 'F9D63A4249A9236D9DC6142C4495C37660D77D54052DC61EE1CC9BE973224E51') {
+$package = Join-Path $PSScriptRoot 'PDF-Zipper-0.1.12.0-x64-test.msix'
+if ((Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash -ne 'FF5CA94F5CD8CF5D7EC4FF9F081E48DACC97D62EA0A810168E01EB51412C0F78') {
     throw 'Das Installationspaket wurde veraendert. Abbruch.'
 }
 $certificatePath = Join-Path $PSScriptRoot 'PDF-Zipper-test.cer'

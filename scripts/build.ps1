@@ -1,5 +1,5 @@
-﻿[CmdletBinding()]
-param([string]$Version = '0.1.10.0', [string]$Publisher = 'CN=kulmi84')
+[CmdletBinding()]
+param([string]$Version = '0.1.12.0', [string]$Publisher = 'CN=kulmi84')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $stage = Join-Path $root 'artifacts/package'
@@ -41,6 +41,7 @@ $makeappx = Get-ChildItem "$sdkRoot/*/x64/makeappx.exe" | Sort-Object FullName -
 if (!$makeappx) { throw 'Windows SDK mit makeappx.exe fehlt.' }
 Run $makeappx.FullName @('pack', '/d', $stage, '/p', "$root/artifacts/PDF-Zipper-$Version-x64.msix", '/o')
 Get-FileHash "$root/artifacts/PDF-Zipper-$Version-x64.msix" -Algorithm SHA256 | Format-List
+
 
 
 

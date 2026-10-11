@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System.Runtime.InteropServices;
 
 namespace PdfZipper;
@@ -35,6 +35,29 @@ internal class WindowsDialog : Form
     {
         var button = new RoundedButton(dark) { Text = text, Font = Font, Size = new Size(Math.Max(68, TextRenderer.MeasureText(text, Font).Width + 16), 24), Margin = new Padding(0, 2, 6, 2), BackColor = SurfaceColor, ForeColor = ForeColor };
         return button;
+    }
+}
+
+internal sealed class WelcomeDialog : WindowsDialog
+{
+    public WelcomeDialog()
+    {
+        Text = "PDF-Zipper";
+        ShowInTaskbar = true;
+        ClientSize = new Size(390, 148);
+        Controls.Add(new Label
+        {
+            Text = Language.Text("PDFs direkt im Windows-Explorer bearbeiten:\n\n" +
+                "Mindestens zwei PDFs im selben Ordner markieren.\n" +
+                "Rechtsklick → PDF-Zipper → Funktion auswählen.\n\n" +
+                "Verzahnen: genau zwei PDFs. Zusammenführen: zwei oder mehr.", "Work with PDFs directly in Windows Explorer:\n\nSelect at least two PDFs in the same folder.\nRight-click → PDF-Zipper → choose an action.\n\nInterleave: exactly two PDFs. Merge: two or more."),
+            Location = new Point(12, 12), Size = new Size(366, 98)
+        });
+        var close = CreateButton(Language.Text("Schließen", "Close"));
+        close.DialogResult = DialogResult.OK;
+        close.Location = new Point(ClientSize.Width - close.Width - 12, ClientSize.Height - 34);
+        Controls.Add(close);
+        AcceptButton = close; CancelButton = close;
     }
 }
 
@@ -98,3 +121,4 @@ internal sealed class RoundedButton : Button
         if (Focused && ShowFocusCues) ControlPaint.DrawFocusRectangle(e.Graphics, Rectangle.Inflate(ClientRectangle, -4, -4), text, fill);
     }
 }
+

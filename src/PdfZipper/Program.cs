@@ -6,6 +6,12 @@ internal static class Program
     private static int Main(string[] args)
     {
         ApplicationConfiguration.Initialize();
+        if (args.Length == 0)
+        {
+            using var welcome = new WelcomeDialog();
+            welcome.ShowDialog();
+            return 0;
+        }
         try
         {
             bool concatenate = args.Length > 0 && args[0] == "--merge";
@@ -31,9 +37,9 @@ internal static class Program
         catch (Exception error)
         {
             string message = error is PdfSharp.Pdf.IO.PdfReaderException
-                ? "Die PDF konnte nicht gelesen werden. Sie ist möglicherweise beschädigt oder passwortgeschützt."
+                ? Language.Text("Die PDF konnte nicht gelesen werden. Sie ist möglicherweise beschädigt oder passwortgeschützt.", "The PDF could not be read. It may be damaged or password-protected.")
                 : error is UnauthorizedAccessException
-                ? "Keine Schreib- oder Leseberechtigung für diesen Ordner oder die Dateien."
+                ? Language.Text("Keine Schreib- oder Leseberechtigung für diesen Ordner oder die Dateien.", "You do not have permission to read the files or write to this folder.")
                 : error.Message;
             using var dialog = new ErrorDialog(message);
             dialog.ShowDialog();
@@ -49,7 +55,7 @@ internal sealed class OrderChoice : WindowsDialog
     public OrderChoice(string[] paths)
     {
         ordered = paths.ToList();
-        Text = "PDF-Zipper – Reihenfolge wählen";
+        Text = Language.Text("PDF-Zipper – Reihenfolge wählen", "PDF-Zipper – Choose order");
         AutoScaleMode = AutoScaleMode.Dpi;
         ClientSize = new Size(390, 124 + Math.Min(paths.Length, 8) * 20);
 
@@ -63,7 +69,7 @@ internal sealed class OrderChoice : WindowsDialog
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
-        layout.Controls.Add(new Label { Text = "Reihenfolge der PDFs:", Dock = DockStyle.Fill });
+        layout.Controls.Add(new Label { Text = Language.Text("Reihenfolge der PDFs:", "PDF order:"), Dock = DockStyle.Fill });
         var list = new ListBox { Dock = DockStyle.Fill, BackColor = SurfaceColor, ForeColor = ForeColor, BorderStyle = BorderStyle.FixedSingle, IntegralHeight = false, HorizontalScrollbar = true };
         void RefreshOrder(int selected)
         {
@@ -74,7 +80,7 @@ internal sealed class OrderChoice : WindowsDialog
         layout.Controls.Add(list);
         Button MakeButton(string text) => CreateButton(text);
         var moves = new FlowLayoutPanel { Dock = DockStyle.Fill, Margin = Padding.Empty, WrapContents = false };
-        var up = MakeButton("Nach oben"); var down = MakeButton("Nach unten");
+        var up = MakeButton(Language.Text("Nach oben", "Move up")); var down = MakeButton(Language.Text("Nach unten", "Move down"));
         void Move(int offset)
         {
             int from = list.SelectedIndex, to = from + offset;
@@ -86,8 +92,8 @@ internal sealed class OrderChoice : WindowsDialog
         list.SelectedIndexChanged += (_, _) => { up.Enabled = list.SelectedIndex > 0; down.Enabled = list.SelectedIndex >= 0 && list.SelectedIndex < ordered.Count - 1; };
         moves.Controls.Add(up); moves.Controls.Add(down); layout.Controls.Add(moves);
         var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, Margin = Padding.Empty, WrapContents = false, FlowDirection = FlowDirection.RightToLeft };
-        var merge = MakeButton("Zusammenführen"); merge.DialogResult = DialogResult.OK;
-        var cancel = MakeButton("Abbrechen"); cancel.DialogResult = DialogResult.Cancel;
+        var merge = MakeButton(Language.Text("Zusammenführen", "Merge")); merge.DialogResult = DialogResult.OK;
+        var cancel = MakeButton(Language.Text("Abbrechen", "Cancel")); cancel.DialogResult = DialogResult.Cancel;
         actions.Controls.Add(merge); actions.Controls.Add(cancel);
         layout.Controls.Add(actions); Controls.Add(layout);
         AcceptButton = merge; CancelButton = cancel;
@@ -99,7 +105,7 @@ internal sealed class FrontChoice : WindowsDialog
     public int FrontIndex { get; private set; }
     public FrontChoice(string[] paths)
     {
-        Text = "PDF-Zipper – Vorderseiten auswählen";
+        Text = Language.Text("PDF-Zipper – Vorderseiten auswählen", "PDF-Zipper – Choose front pages");
         AutoScaleMode = AutoScaleMode.Dpi;
         ClientSize = new Size(390, 156);
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -110,7 +116,7 @@ internal sealed class FrontChoice : WindowsDialog
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        layout.Controls.Add(new Label { Text = "Welche Datei enthält die Vorderseiten?\nDie andere Datei wird rückwärts eingefügt.", AutoSize = true });
+        layout.Controls.Add(new Label { Text = Language.Text("Welche Datei enthält die Vorderseiten?\nDie andere Datei wird rückwärts eingefügt.", "Which file contains the front pages?\nThe other file will be inserted in reverse order."), AutoSize = true });
         for (int i = 0; i < 2; i++)
         {
             int index = i;
@@ -119,10 +125,11 @@ internal sealed class FrontChoice : WindowsDialog
             button.Click += (_, _) => { FrontIndex = index; DialogResult = DialogResult.OK; };
             layout.Controls.Add(button);
         }
-        var cancel = CreateButton("Abbrechen"); cancel.DialogResult = DialogResult.Cancel;
+        var cancel = CreateButton(Language.Text("Abbrechen", "Cancel")); cancel.DialogResult = DialogResult.Cancel;
         CancelButton = cancel; layout.Controls.Add(cancel); Controls.Add(layout);
     }
 }
+
 
 
 
