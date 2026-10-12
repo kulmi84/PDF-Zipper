@@ -87,6 +87,47 @@ try {
     Task.WaitAll(tasks);
     Assert(tasks.Select(t => t.Result).Distinct().Count() == 4, "Concurrent collisions");
     Assert(!Directory.EnumerateFiles(root, "*.tmp").Any(), "No temporary leftovers");
+    var imagePath = Path.Combine(root, "picture.png");
+    using (var bitmap = new System.Drawing.Bitmap(400, 200)) {
+        using (var graphics = System.Drawing.Graphics.FromImage(bitmap)) graphics.Clear(System.Drawing.Color.Red);
+        bitmap.Save(imagePath, System.Drawing.Imaging.ImageFormat.Png);
+    }
+    var imageHash = SHA256.HashData(File.ReadAllBytes(imagePath));
+    var mixed = DocumentMerge.Merge([front, imagePath, back]);
+    using (var merged = PdfReader.Open(mixed, PdfDocumentOpenMode.Import)) {
+        Assert(merged.PageCount == 7, "PDF/image total pages");
+        Assert(merged.Pages[0].Width.Point == 101 && merged.Pages[4].Width.Point == 106, "Mixed ordering preserved");
+        Assert(merged.Pages[3].Width.Point > merged.Pages[3].Height.Point, "Landscape image A4");
+    }
+    Assert(imageHash.SequenceEqual(SHA256.HashData(File.ReadAllBytes(imagePath))), "Image original preserved");
+    Assert(fhash.SequenceEqual(SHA256.HashData(File.ReadAllBytes(front))), "Mixed PDF original preserved");
+    Assert(DocumentMerge.Merge([front, imagePath, back]) != mixed, "Mixed collision safe");
+    Reject(() => DocumentMerge.Validate([imagePath, imagePath]), "Mixed duplicate rejected");
+    Reject(() => DocumentMerge.Validate([front, elsewhere]), "Mixed folders rejected");
+    var unsupported = Path.Combine(root, "unsupported.txt"); File.WriteAllText(unsupported, "text");
+    Reject(() => DocumentMerge.Validate([front, unsupported]), "Unsupported format rejected");
+    int before = Directory.GetFiles(root, "*.pdf").Length;
+    Reject(() => DocumentMerge.Merge([imagePath, broken]), "Failed mixed merge rejected");
+    Assert(Directory.GetFiles(root, "*.pdf").Length == before, "Failed conversion produces no PDF");
+    if (language == "de-DE" && Environment.GetEnvironmentVariable("PDF_ZIPPER_TEST_WORD") == "1" && DocumentMerge.WordAvailable) {
+        var docx = Path.Combine(root, "sample.docx");
+        using (var archive = System.IO.Compression.ZipFile.Open(docx, System.IO.Compression.ZipArchiveMode.Create)) {
+            void Entry(string name, string xml) { using var writer = new StreamWriter(archive.CreateEntry(name).Open()); writer.Write(xml); }
+            Entry("[Content_Types].xml", "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>");
+            Entry("_rels/.rels", "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>");
+            Entry("word/document.xml", "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:body><w:p><w:r><w:t>PDF-Zipper Word test page 1</w:t><w:br w:type=\"page\"/><w:t>PDF-Zipper Word test page 2</w:t></w:r></w:p><w:sectPr/></w:body></w:document>");
+        }
+        var docHash = SHA256.HashData(File.ReadAllBytes(docx));
+        string? wordOutput = null; Exception? wordError = null;
+        var thread = new Thread(() => { try { wordOutput = DocumentMerge.Merge([docx, imagePath, back]); } catch (Exception e) { wordError = e; } });
+        thread.SetApartmentState(ApartmentState.STA); thread.Start();
+        if (!thread.Join(TimeSpan.FromMinutes(2))) throw new Exception("Word conversion test timed out");
+        if (wordError is not null) throw wordError;
+        using var wordPdf = PdfReader.Open(wordOutput!, PdfDocumentOpenMode.Import);
+        Assert(wordPdf.PageCount == 6, "Word image PDF merge page count");
+        Assert(wordPdf.Pages[3].Width.Point == 106, "Word mixed order");
+        Assert(docHash.SequenceEqual(SHA256.HashData(File.ReadAllBytes(docx))), "Word original unchanged");
+    }
     Console.WriteLine($"PASS: {checks} checks");
 }
 finally { Directory.Delete(root, true); }

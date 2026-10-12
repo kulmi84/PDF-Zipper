@@ -41,9 +41,9 @@ int wmain() {
             Check(SUCCEEDED(command->EnumSubCommands(&children)), "Submenu enumerator");
             if (!children) return 8;
             bool german = PRIMARYLANGID(GetUserDefaultUILanguage()) == LANG_GERMAN;
-            const wchar_t* expected[] = { german ? L"PDFs verzahnen" : L"Interleave PDFs", german ? L"PDFs zusammenführen" : L"Merge PDFs" };
-            GUID ids[2]{};
-            for (int i = 0; i < 2; i++) {
+            const wchar_t* expected[] = { german ? L"PDFs verzahnen" : L"Interleave PDFs", german ? L"PDFs zusammenführen" : L"Merge PDFs", german ? L"Als PDF zusammenführen" : L"Merge as PDF" };
+            GUID ids[3]{};
+            for (int i = 0; i < 3; i++) {
                 ComPtr<IExplorerCommand> child;
                 ULONG fetched = 0;
                 Check(children->Next(1, &child, &fetched) == S_OK && fetched == 1, "Child enumerated");
@@ -57,7 +57,7 @@ int wmain() {
             }
             Check(ids[0] != ids[1] && ids[0] != CommandId && ids[1] != CommandId, "Distinct command identities");
             ComPtr<IExplorerCommand> end;
-            Check(children->Next(1, &end, nullptr) == S_FALSE, "Exactly two children");
+            Check(children->Next(1, &end, nullptr) == S_FALSE, "Exactly three children");
             children->Reset(); children->Skip(1);
             ComPtr<IEnumExplorerCommand> copy;
             Check(SUCCEEDED(children->Clone(&copy)), "Enumerator clone");
@@ -73,7 +73,7 @@ int wmain() {
         if (!GetTempPathW(MAX_PATH, temp)) return 6;
         std::wstring base(temp);
         base += L"pdf-zipper-native-" + std::to_wstring(GetCurrentProcessId());
-        std::vector<std::wstring> names{base + L"-Vorderseiten.pdf", base + L"-Rückseiten.pdf", base + L".txt", base + L"-third.pdf"};
+        std::vector<std::wstring> names{base + L"-Vorderseiten.pdf", base + L"-Rückseiten.pdf", base + L".txt", base + L"-third.pdf", base + L".docx", base + L".png"};
         std::vector<PIDLIST_ABSOLUTE> ids;
         for (const auto& name : names) {
             HANDLE file = CreateFileW(name.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -104,12 +104,44 @@ int wmain() {
             ComPtr<IEnumExplorerCommand> children;
             command->EnumSubCommands(&children);
             if (!children) return 10;
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 3; i++) {
                 ComPtr<IExplorerCommand> child;
                 if (children->Next(1, &child, nullptr) != S_OK) return 11;
                 child->GetState(selected.Get(), FALSE, &state);
-                Check(state == static_cast<EXPCMDSTATE>(i == 0 ? ECS_HIDDEN : ECS_ENABLED), "Three PDFs only concatenate");
+                Check(state == static_cast<EXPCMDSTATE>(i == 1 ? ECS_ENABLED : ECS_HIDDEN), "Three PDFs only concatenate");
                 if (i == 0) Check(child->Invoke(selected.Get(), nullptr) == E_INVALIDARG, "Reject interleaving three PDFs");
+            }
+        }
+        {
+            ComPtr<IShellItemArray> mixed;
+            PCIDLIST_ABSOLUTE selected[] = {ids[0], ids[4], ids[5]};
+            Check(SUCCEEDED(SHCreateShellItemArrayFromIDLists(3, selected, &mixed)), "PDF Word image selection");
+            Check(selectionState({ids[4], ids[5]}) == ECS_ENABLED, "Word/image parent shown");
+            ComPtr<IEnumExplorerCommand> children;
+            command->EnumSubCommands(&children);
+            for (int i=0; i<3; i++) {
+                ComPtr<IExplorerCommand> child;
+                children->Next(1, &child, nullptr);
+                child->GetState(mixed.Get(), FALSE, &state);
+                if (i<2) Check(state==ECS_HIDDEN, "PDF-only actions hidden for Word/images");
+                else {
+                    Check(state==ECS_ENABLED || state==ECS_DISABLED, "Document action shown");
+                    // Override HKCR only in this test process to simulate a PC without Word.
+                    HKEY empty = nullptr;
+                    std::wstring key = L"Software\\PDF-Zipper-Word-Test-" + std::to_wstring(GetCurrentProcessId());
+                    if (RegCreateKeyExW(HKEY_CURRENT_USER,key.c_str(),0,nullptr,REG_OPTION_VOLATILE,KEY_ALL_ACCESS,nullptr,&empty,nullptr)==ERROR_SUCCESS) {
+                        Check(RegOverridePredefKey(HKEY_CLASSES_ROOT,empty)==ERROR_SUCCESS,"Simulate no Word");
+                        child->GetState(mixed.Get(),FALSE,&state);
+                        Check(state==ECS_DISABLED,"Word missing: merge disabled");
+                        RegOverridePredefKey(HKEY_CLASSES_ROOT,nullptr);
+                        RegCloseKey(empty); RegDeleteKeyW(HKEY_CURRENT_USER,key.c_str());
+                    } else Check(false,"Create isolated Word test registry");
+                    ComPtr<IShellItemArray> images;
+                    PCIDLIST_ABSOLUTE imageSelection[] = {ids[0],ids[5]};
+                    SHCreateShellItemArrayFromIDLists(2,imageSelection,&images);
+                    child->GetState(images.Get(),FALSE,&state);
+                    Check(state==ECS_ENABLED,"PDF/image does not require Word");
+                }
             }
         }
         for (auto id : ids) CoTaskMemFree(id);

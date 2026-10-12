@@ -44,14 +44,15 @@ internal sealed class WelcomeDialog : WindowsDialog
     {
         Text = "PDF-Zipper";
         ShowInTaskbar = true;
-        ClientSize = new Size(390, 148);
+        ClientSize = new Size(390, 174);
         Controls.Add(new Label
         {
-            Text = Language.Text("PDFs direkt im Windows-Explorer bearbeiten:\n\n" +
-                "Mindestens zwei PDFs im selben Ordner markieren.\n" +
+            Text = Language.Text("Dateien direkt im Windows-Explorer bearbeiten:\n\n" +
+                "Mindestens zwei Dateien im selben Ordner markieren.\n" +
                 "Rechtsklick → PDF-Zipper → Funktion auswählen.\n\n" +
-                "Verzahnen: genau zwei PDFs. Zusammenführen: zwei oder mehr.", "Work with PDFs directly in Windows Explorer:\n\nSelect at least two PDFs in the same folder.\nRight-click → PDF-Zipper → choose an action.\n\nInterleave: exactly two PDFs. Merge: two or more."),
-            Location = new Point(12, 12), Size = new Size(366, 98)
+                "Verzahnen: genau zwei PDFs. Zusammenführen: zwei oder mehr.\n" +
+                "Auch Word, JPG und PNG als PDF zusammenführen.\nWorddateien benötigen installiertes Microsoft Word.", "Work with files directly in Windows Explorer:\n\nSelect at least two files in the same folder.\nRight-click → PDF-Zipper → choose an action.\n\nInterleave: exactly two PDFs. Merge: two or more.\nAlso merge Word, JPG and PNG as PDF.\nWord documents require installed Microsoft Word."),
+            Location = new Point(12, 12), Size = new Size(366, 130)
         });
         var close = CreateButton(Language.Text("Schließen", "Close"));
         close.DialogResult = DialogResult.OK;

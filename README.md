@@ -10,6 +10,14 @@ PDF-Zipper kombiniert Vorderseiten in normaler Reihenfolge mit Rückseiten in um
 | Rückseiten (Scanreihenfolge) | 6, 4, 2 |
 | Ergebnis | 1, 2, 3, 4, 5, 6 |
 
+## Word, PDF und Bilder gemeinsam zusammenführen (0.1.13)
+
+Mindestens zwei Dateien im selben Ordner markieren → **PDF-Zipper → Als PDF zusammenführen**. Unterstützt werden `.pdf`, `.doc`, `.docx`, `.jpg`, `.jpeg` und `.png`. Im kompakten Dialog die Reihenfolge wählen. Word exportiert die Dokumentseiten; Bilder werden proportional auf jeweils eine A4-Seite mit 10 mm Rand gesetzt, einschließlich EXIF-Ausrichtung. Die Ausgabe entsteht im selben Ordner, Originale bleiben unverändert und vorhandene Dateien werden nicht überschrieben.
+
+**Worddateien benötigen die installierte Desktopversion von Microsoft Word.** Ohne Word ist diese Funktion bei einer Auswahl mit Worddateien ausgegraut. PDF und Bilder benötigen kein Word. Eine defekte oder nicht aktivierte Wordinstallation kann den Export verhindern. Worddateien werden schreibgeschützt geöffnet; Dokumentmakros und automatische Linkaktualisierung beim Öffnen werden deaktiviert. Die Darstellung hängt von Word und verfügbaren Schriftarten ab. Während des Auftrags zeigt ein kleines Fenster die aktuelle Datei. Word kann seine eigenen Office-Funktionen ausführen; PDF-Zipper selbst stellt keine Netzwerkverbindungen her.
+
+Bei reiner PDF-Auswahl bleiben die bisherigen Funktionen erhalten. Andere Dateiformate, passwortgeschützte Worddokumente und mehrseitige Bildformate werden nicht unterstützt.
+
 ## Screenshots
 
 Aktuelles Explorer-Menü und Dialoge unter Windows 11. Die Screenshots zeigen Testdateien und das helle sowie dunkle Windows-Design.
@@ -62,9 +70,9 @@ Alle Dialoge verwenden die Windows-Einstellung für Hell/Dunkel, einschließlich
 
 Ziel: Windows 11, x64. Der Eintrag soll direkt im neuen Kontextmenü erscheinen. Dafür wird die von Microsoft vorgesehene Kombination aus `IExplorerCommand` und MSIX-Registrierung verwendet. [Microsoft-Dokumentation](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/desktop-to-uwp-extensions#specify-a-context-menu-handler-for-a-file-type).
 
-**Aktueller Entwicklungsstand: 0.1.12.** Deutsch und Englisch werden anhand der Windows-Anzeigesprache gewählt. Der lokale Build, 165 PDF-Prüfungen in drei Spracheinstellungen und die nativen COM-Auswahltests waren erfolgreich. Version 0.1.12 wurde am 11.10.2026 zur Microsoft-Store-Zertifizierung eingereicht. Die Store-Veröffentlichung erfolgt nach erfolgreicher Prüfung manuell; die App ist noch nicht im Store verfügbar. Ein Test auf einem frisch eingerichteten zweiten PC steht noch aus.
+**Aktueller Stand: 0.1.13.** Der lokale Build mit nativen COM-Auswahltests und Word-Konvertierung wurde auf dem Entwicklungs-PC durchgeführt und vom Nutzer ausprobiert. 198 PDF-/Bildprüfungen bestanden; der lokale Build prüft zusätzlich einen echten Wordexport und das ausgegraute Menü bei fehlendem Word. Version 0.1.12 ist bereits im Microsoft Store verfügbar. Das Store-Update für 0.1.13 wird zur Prüfung vorbereitet; Veröffentlichung manuell. Ein Test auf einem frisch eingerichteten zweiten PC steht noch aus.
 
-Der GitHub-Installer für 0.1.12 enthält das signierte MSIX und ein **internes Testzertifikat**. Auf einem neuen PC ist eine ausdrückliche Vertrauenseinrichtung erforderlich. Das Store-Paket ist für die Store-Einreichung bestimmt. [Installationsanleitung](installer/INSTALLATION.md) · [Releases und Installer](https://github.com/kulmi84/PDF-Zipper/releases).
+Der GitHub-Installer für 0.1.13 enthält das signierte MSIX und ein **internes Testzertifikat**. Auf einem neuen PC ist eine ausdrückliche Vertrauenseinrichtung erforderlich. Das Store-Paket ist für die Store-Einreichung bestimmt. [Installationsanleitung](installer/INSTALLATION.md) · [Releases und Installer](https://github.com/kulmi84/PDF-Zipper/releases).
 
 Installer-ZIP vollständig entpacken und `Install-PDF-Zipper.cmd` doppelklicken. Bei erstmaliger Einrichtung das Zertifikatsvertrauen mit `JA` und anschließend per Windows-Administratorabfrage bestätigen. Danach läuft PDF-Zipper ohne Build-Werkzeuge und ohne installiertes .NET. Updates verwenden denselben Installer; Deinstallation über Windows-Einstellungen entfernt die Menüregistrierung. Ergebnis-PDFs bleiben erhalten.
 
@@ -91,7 +99,7 @@ Für ein bereits eingerichtetes Code-Signing-Zertifikat im Zertifikatsspeicher d
 
 ```powershell
 # Beim Build -Publisher mit dem exakten Zertifikats-Subject angeben.
-./scripts/sign.ps1 -Package ./artifacts/PDF-Zipper-0.1.12.0-x64.msix -CertificateThumbprint '<Thumbprint>'
+./scripts/sign.ps1 -Package ./artifacts/PDF-Zipper-0.1.13.0-x64.msix -CertificateThumbprint '<Thumbprint>'
 ```
 
 Ein RFC-3161-Zeitstempeldienst kann mit `-TimestampUrl` angegeben werden. Das Skript signiert und prüft die Signatur; es erzeugt keine Zertifikate und richtet kein Vertrauen ein.

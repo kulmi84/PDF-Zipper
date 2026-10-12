@@ -14,6 +14,18 @@ internal static class Program
         }
         try
         {
+            if (args[0] == "--merge-documents")
+            {
+                var files = DocumentMerge.Validate(args[1..]);
+                if (files.Any(DocumentMerge.IsWord) && !DocumentMerge.WordAvailable)
+                    throw new InvalidOperationException(Language.Text("Für Worddateien wird installiertes Microsoft Word benötigt.", "Microsoft Word must be installed to convert Word documents."));
+                using var order = new OrderChoice(files, true);
+                if (order.ShowDialog() != DialogResult.OK) return 0;
+                using var progress = new ConversionProgress(order.OrderedPaths);
+                progress.ShowDialog();
+                if (progress.Error is not null) throw progress.Error;
+                return 0;
+            }
             bool concatenate = args.Length > 0 && args[0] == "--merge";
             var paths = Zipper.Validate(concatenate ? args[1..] : args, concatenate);
             if (concatenate)
@@ -52,7 +64,7 @@ internal sealed class OrderChoice : WindowsDialog
 {
     private readonly List<string> ordered;
     public string[] OrderedPaths => ordered.ToArray();
-    public OrderChoice(string[] paths)
+    public OrderChoice(string[] paths, bool documents = false)
     {
         ordered = paths.ToList();
         Text = Language.Text("PDF-Zipper – Reihenfolge wählen", "PDF-Zipper – Choose order");
@@ -69,7 +81,7 @@ internal sealed class OrderChoice : WindowsDialog
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
-        layout.Controls.Add(new Label { Text = Language.Text("Reihenfolge der PDFs:", "PDF order:"), Dock = DockStyle.Fill });
+        layout.Controls.Add(new Label { Text = documents ? Language.Text("Reihenfolge der Dateien:", "File order:") : Language.Text("Reihenfolge der PDFs:", "PDF order:"), Dock = DockStyle.Fill });
         var list = new ListBox { Dock = DockStyle.Fill, BackColor = SurfaceColor, ForeColor = ForeColor, BorderStyle = BorderStyle.FixedSingle, IntegralHeight = false, HorizontalScrollbar = true };
         void RefreshOrder(int selected)
         {

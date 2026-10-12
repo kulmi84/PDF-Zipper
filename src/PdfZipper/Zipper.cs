@@ -86,7 +86,7 @@ public static class Zipper
         return Save(result, inputs[0], Language.Text("_zusammengeführt", "_merged"));
     }
 
-    private static string Save(PdfDocument result, string first, string ending)
+    internal static string Save(PdfDocument result, string first, string ending)
     {
         var directory = Path.GetDirectoryName(first)!;
         // Complete the PDF first; publish with a non-overwriting, same-directory move.

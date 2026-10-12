@@ -20,6 +20,11 @@
     </com:ComServer></com:Extension>
     <desktop4:Extension Category="windows.fileExplorerContextMenus"><desktop4:FileExplorerContextMenus>
      <desktop4:ItemType Type=".pdf"><desktop4:Verb Id="PdfZipper" Clsid="ab7df971-896a-4d3b-b98d-c694b01e7ead" /></desktop4:ItemType>
+<desktop4:ItemType Type=".doc"><desktop4:Verb Id="PdfZipper" Clsid="ab7df971-896a-4d3b-b98d-c694b01e7ead" /></desktop4:ItemType>
+<desktop4:ItemType Type=".docx"><desktop4:Verb Id="PdfZipper" Clsid="ab7df971-896a-4d3b-b98d-c694b01e7ead" /></desktop4:ItemType>
+<desktop4:ItemType Type=".jpg"><desktop4:Verb Id="PdfZipper" Clsid="ab7df971-896a-4d3b-b98d-c694b01e7ead" /></desktop4:ItemType>
+<desktop4:ItemType Type=".jpeg"><desktop4:Verb Id="PdfZipper" Clsid="ab7df971-896a-4d3b-b98d-c694b01e7ead" /></desktop4:ItemType>
+<desktop4:ItemType Type=".png"><desktop4:Verb Id="PdfZipper" Clsid="ab7df971-896a-4d3b-b98d-c694b01e7ead" /></desktop4:ItemType>
     </desktop4:FileExplorerContextMenus></desktop4:Extension>
    </Extensions>
   </Application>

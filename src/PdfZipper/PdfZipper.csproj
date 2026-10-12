@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
-    <AssemblyName>PDF-Zipper</AssemblyName><Version>0.1.12</Version><ApplicationIcon>../../assets/PdfZipper.ico</ApplicationIcon>
+    <AssemblyName>PDF-Zipper</AssemblyName><Version>0.1.13</Version><ApplicationIcon>../../assets/PdfZipper.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup><PackageReference Include="PDFsharp" Version="6.2.4" /></ItemGroup>
 </Project>

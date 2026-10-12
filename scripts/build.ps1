@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$Version = '0.1.12.0', [string]$Publisher = 'CN=kulmi84')
+param([string]$Version = '0.1.13.0', [string]$Publisher = 'CN=kulmi84')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $stage = Join-Path $root 'artifacts/package'
