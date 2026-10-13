@@ -6,6 +6,19 @@ internal static class Program
     private static int Main(string[] args)
     {
         ApplicationConfiguration.Initialize();
+        bool diagnostics = args.Length > 0 && args[0] == "--diagnose";
+        if (diagnostics) args = args[1..];
+        if (args.Length == 1 && args[0] == "--choose-files")
+        {
+            using var picker = new OpenFileDialog
+            {
+                Title = Language.Text("PDF-Zipper – Dateien auswählen", "PDF-Zipper – Select files"),
+                Filter = "PDF / Word / JPG / PNG|*.pdf;*.doc;*.docx;*.jpg;*.jpeg;*.png",
+                Multiselect = true, CheckFileExists = true
+            };
+            if (picker.ShowDialog() != DialogResult.OK) return 0;
+            args = ["--merge-documents", .. picker.FileNames];
+        }
         if (args.Length == 0)
         {
             using var welcome = new WelcomeDialog();
@@ -21,7 +34,7 @@ internal static class Program
                     throw new InvalidOperationException(Language.Text("Für Worddateien wird installiertes Microsoft Word benötigt.", "Microsoft Word must be installed to convert Word documents."));
                 using var order = new OrderChoice(files, true);
                 if (order.ShowDialog() != DialogResult.OK) return 0;
-                using var progress = new ConversionProgress(order.OrderedPaths);
+                using var progress = new ConversionProgress(order.OrderedPaths, diagnostics);
                 progress.ShowDialog();
                 if (progress.Error is not null) throw progress.Error;
                 return 0;

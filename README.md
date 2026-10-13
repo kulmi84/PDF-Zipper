@@ -14,7 +14,7 @@ PDF-Zipper kombiniert Vorderseiten in normaler Reihenfolge mit Rückseiten in um
 
 Mindestens zwei Dateien im selben Ordner markieren → **PDF-Zipper → Als PDF zusammenführen**. Unterstützt werden `.pdf`, `.doc`, `.docx`, `.jpg`, `.jpeg` und `.png`. Im kompakten Dialog die Reihenfolge wählen. Word exportiert die Dokumentseiten; Bilder werden proportional auf jeweils eine A4-Seite mit 10 mm Rand gesetzt, einschließlich EXIF-Ausrichtung. Die Ausgabe entsteht im selben Ordner, Originale bleiben unverändert und vorhandene Dateien werden nicht überschrieben.
 
-**Worddateien benötigen die installierte Desktopversion von Microsoft Word.** Ohne Word ist diese Funktion bei einer Auswahl mit Worddateien ausgegraut. PDF und Bilder benötigen kein Word. Eine defekte oder nicht aktivierte Wordinstallation kann den Export verhindern. Worddateien werden schreibgeschützt geöffnet; Dokumentmakros und automatische Linkaktualisierung beim Öffnen werden deaktiviert. Die Darstellung hängt von Word und verfügbaren Schriftarten ab. Während des Auftrags zeigt ein kleines Fenster die aktuelle Datei. Word kann seine eigenen Office-Funktionen ausführen; PDF-Zipper selbst stellt keine Netzwerkverbindungen her.
+**Worddateien benötigen die installierte Desktopversion von Microsoft Word.** Ohne Word ist diese Funktion bei einer Auswahl mit Worddateien ausgegraut. PDF und Bilder benötigen kein Word. Eine defekte oder nicht aktivierte Wordinstallation kann den Export verhindern. Worddateien werden schreibgeschützt geöffnet; Dokumentmakros und automatische Linkaktualisierung beim Öffnen werden deaktiviert. Die Darstellung hängt von Word und verfügbaren Schriftarten ab. Während des Auftrags zeigt ein kleines Fenster die aktuelle Datei, den Verarbeitungsschritt und die verstrichene Zeit. Word kann seine eigenen Office-Funktionen ausführen; PDF-Zipper selbst stellt keine Netzwerkverbindungen her.
 
 Bei reiner PDF-Auswahl bleiben die bisherigen Funktionen erhalten. Andere Dateiformate, passwortgeschützte Worddokumente und mehrseitige Bildformate werden nicht unterstützt.
 
@@ -74,9 +74,9 @@ Alle Dialoge verwenden die Windows-Einstellung für Hell/Dunkel, einschließlich
 
 Ziel: Windows 11, x64. Der Eintrag soll direkt im neuen Kontextmenü erscheinen. Dafür wird die von Microsoft vorgesehene Kombination aus `IExplorerCommand` und MSIX-Registrierung verwendet. [Microsoft-Dokumentation](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/desktop-to-uwp-extensions#specify-a-context-menu-handler-for-a-file-type).
 
-**Aktueller Stand: 0.1.13.** Der lokale Build mit nativen COM-Auswahltests und Word-Konvertierung wurde auf dem Entwicklungs-PC durchgeführt und vom Nutzer ausprobiert. 198 PDF-/Bildprüfungen bestanden; der lokale Build prüft zusätzlich einen echten Wordexport und das ausgegraute Menü bei fehlendem Word. Version 0.1.12 ist bereits im Microsoft Store verfügbar. Das Store-Update für 0.1.13 wird zur Prüfung vorbereitet; Veröffentlichung manuell. Ein Test auf einem frisch eingerichteten zweiten PC steht noch aus.
+**Aktueller Stand: 0.1.16.** Wordexport nutzt Microsoft Print to PDF innerhalb der eigenen Wordinstanz, sofern verfügbar. Der Windows-Standarddrucker bleibt unverändert. Das vermeidet die beobachtete lange Wartezeit bei einem nicht erreichbaren Drucker. Der Nutzer hat den Fix auf dem betroffenen Rechner mit den ursprünglichen Dokumenten geprüft: erster Export rund 4 statt 54 Sekunden. 204 PDF-/Bildprüfungen bestanden. Version 0.1.13 ist im Store verfügbar; 0.1.16 wird zur Zertifizierung eingereicht, Veröffentlichung manuell.
 
-Der GitHub-Installer für 0.1.13 enthält das signierte MSIX und ein **internes Testzertifikat**. Auf einem neuen PC ist eine ausdrückliche Vertrauenseinrichtung erforderlich. Das Store-Paket ist für die Store-Einreichung bestimmt. [Installationsanleitung](installer/INSTALLATION.md) · [Releases und Installer](https://github.com/kulmi84/PDF-Zipper/releases).
+Der GitHub-Installer für 0.1.16 enthält das signierte MSIX und ein **internes Testzertifikat**. Auf einem neuen PC ist eine ausdrückliche Vertrauenseinrichtung erforderlich. Das Store-Paket ist für die Store-Einreichung bestimmt. [Installationsanleitung](installer/INSTALLATION.md) · [Releases und Installer](https://github.com/kulmi84/PDF-Zipper/releases).
 
 Installer-ZIP vollständig entpacken und `Install-PDF-Zipper.cmd` doppelklicken. Bei erstmaliger Einrichtung das Zertifikatsvertrauen mit `JA` und anschließend per Windows-Administratorabfrage bestätigen. Danach läuft PDF-Zipper ohne Build-Werkzeuge und ohne installiertes .NET. Updates verwenden denselben Installer; Deinstallation über Windows-Einstellungen entfernt die Menüregistrierung. Ergebnis-PDFs bleiben erhalten.
 
@@ -129,3 +129,7 @@ PDF-Zipper verwendet Deutsch bei deutscher Windows-Anzeigesprache und sonst Engl
 
 PDF-Zipper uses German when the Windows display language is German, and English otherwise. Explorer actions, dialogs, usage instructions, error messages and output filename suffixes follow this selection. Filename detection supports German and English terms in either language. Original filenames remain unchanged.
 
+
+## Optionale Diagnose
+
+Normalerweise werden keine Diagnoseprotokolle erstellt. Bei Bedarf PDF-Zipper.exe --diagnose --choose-files aufrufen. Die lokalen Protokolle liegen unter %TEMP%\PDF-Zipper-Diagnose und enthalten Dateinamen, Druckerbezeichnungen und Laufzeiten. Sie werden nicht übertragen.

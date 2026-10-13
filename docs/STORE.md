@@ -1,6 +1,6 @@
 # Microsoft Store
 
-Version 0.1.12 ist im Microsoft Store verfügbar. Update 0.1.13 ergänzt Word- und Bildkonvertierung. Es verwendet dasselbe Store-Produkt und die bestehenden Suchbegriffe. Veröffentlichung nach der Prüfung manuell. Das Store-Paket ist kein direkt installierbarer GitHub-Testinstaller.
+Version 0.1.13 ist im Microsoft Store verfügbar. Update 0.1.16 verbessert den Wordexport bei nicht erreichbaren Druckern und ergänzt den Screenshot mit gemeinsam ausgewählten Worddateien, PDFs und Bildern. Es verwendet dasselbe Store-Produkt und die bestehenden Suchbegriffe. Veröffentlichung nach der Prüfung manuell. Das Store-Paket ist kein direkt installierbarer GitHub-Testinstaller.
 
 ## Paketidentität
 

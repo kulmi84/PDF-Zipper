@@ -20,7 +20,7 @@ public static class DocumentMerge
         return full;
     }
 
-    public static string Merge(string[] paths, Action<int, string>? progress = null)
+    public static string Merge(string[] paths, Action<int, string>? progress = null, Action<MergeStage>? stages = null)
     {
         var inputs = Validate(paths);
         if (inputs.Any(IsWord) && !WordAvailable) throw new InvalidOperationException(Language.Text("Für Worddateien wird installiertes Microsoft Word benötigt.", "Microsoft Word must be installed to convert Word documents."));
@@ -29,22 +29,28 @@ public static class DocumentMerge
         try
         {
             using var result = new PdfDocument();
-            using var word = inputs.Any(IsWord) ? new WordConverter() : null;
+            using var word = inputs.Any(IsWord) ? new WordConverter(stages) : null;
             for (int i = 0; i < inputs.Length; i++)
             {
                 var path = inputs[i];
                 progress?.Invoke(i + 1, Path.GetFileName(path));
                 var ext = Path.GetExtension(path).ToLowerInvariant();
-                if (ext is ".jpg" or ".jpeg" or ".png") AddImage(result, path, Path.Combine(temporary, $"image-{i}.png"));
+                if (ext is ".jpg" or ".jpeg" or ".png")
+                {
+                    using var timing = new MergeTiming(Language.Text("Bild verarbeiten", "Process image"), stages);
+                    AddImage(result, path, Path.Combine(temporary, $"image-{i}.png"));
+                }
                 else
                 {
                     string pdf = path;
                     if (IsWord(path)) { pdf = Path.Combine(temporary, $"word-{i}.pdf"); word!.Export(path, pdf); }
+                    using var timing = new MergeTiming(Language.Text("PDF-Seiten übernehmen", "Import PDF pages"), stages);
                     using var input = PdfReader.Open(pdf, PdfDocumentOpenMode.Import);
                     if (input.SecuritySettings.IsEncrypted || input.PageCount == 0) throw new InvalidOperationException(Language.Text($"{Path.GetFileName(path)} enthält keine lesbaren, ungeschützten Seiten.", $"{Path.GetFileName(path)} has no readable, unprotected pages."));
                     foreach (var page in input.Pages) result.AddPage(page);
                 }
             }
+            using var saveTiming = new MergeTiming(Language.Text("Ergebnis speichern", "Save result"), stages);
             return Zipper.Save(result, inputs[0], Language.Text("_zusammengeführt", "_merged"));
         }
         finally { Directory.Delete(temporary, true); }
@@ -76,40 +82,78 @@ public static class DocumentMerge
     private sealed class WordConverter : IDisposable
     {
         private object? application;
-        public WordConverter()
+        private readonly Action<MergeStage>? stages;
+        public WordConverter(Action<MergeStage>? stages)
         {
+            this.stages = stages;
             try
             {
-                application = Activator.CreateInstance(Type.GetTypeFromProgID("Word.Application", true)!);
+                using (var timing = new MergeTiming(Language.Text("Word starten", "Start Word"), stages))
+                    application = Activator.CreateInstance(Type.GetTypeFromProgID("Word.Application", true)!);
+                using var configureTiming = new MergeTiming(Language.Text("Word vorbereiten", "Configure Word"), stages);
                 dynamic word = application!;
                 word.Visible = false;
                 word.DisplayAlerts = 0;
                 word.AutomationSecurity = 3; // Disable document macros before opening any input.
                 object options = word.Options;
                 try { ((dynamic)options).UpdateLinksAtOpen = false; } finally { Marshal.FinalReleaseComObject(options); }
+                ConfigureLocalPrinter(word);
             }
             catch { Dispose(); throw; }
+        }
+        private void ConfigureLocalPrinter(dynamic word)
+        {
+            using var timing = new MergeTiming(Language.Text("Lokalen Drucker für Word auswählen", "Select local Word printer"), stages);
+            using var settings = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows NT\CurrentVersion\Windows");
+            string before = settings?.GetValue("Device")?.ToString() ?? "(unknown)";
+            stages?.Invoke(new("Windows printer before: " + before, false, 0));
+            if (!new System.Drawing.Printing.PrinterSettings { PrinterName = "Microsoft Print to PDF" }.IsValid)
+            {
+                stages?.Invoke(new("Local PDF printer unavailable; using Word's existing printer", false, 0));
+                return;
+            }
+            object? basic = null;
+            try
+            {
+                basic = word.WordBasic;
+                // ActivePrinter's setter changes Windows' default. WordBasic's named flag avoids this.
+                ((dynamic)basic).FilePrintSetup(Printer: "Microsoft Print to PDF", DoNotSetAsSysDefault: 1);
+                stages?.Invoke(new("Word printer: " + (string)word.ActivePrinter, false, 0));
+            }
+            catch (COMException e)
+            {
+                stages?.Invoke(new($"Local printer selection failed: 0x{e.HResult:X8}; existing printer retained", false, 0));
+            }
+            finally { if (basic is not null) Marshal.FinalReleaseComObject(basic); }
+            string after = settings?.GetValue("Device")?.ToString() ?? "(unknown)";
+            stages?.Invoke(new("Windows printer after: " + after, false, 0));
+            if (!string.Equals(before, after, StringComparison.Ordinal))
+                throw new InvalidOperationException(Language.Text("Der Windows-Standarddrucker hat sich während der Verarbeitung verändert. Bitte die Druckereinstellung prüfen; die Verarbeitung wurde abgebrochen.", "The Windows default printer changed during processing. Please check your printer settings; processing was stopped."));
         }
         public void Export(string input, string output)
         {
             object? documents = null, document = null;
             try
             {
-                documents = ((dynamic)application!).Documents;
+                using (var timing = new MergeTiming(Language.Text("Word-Dokumentzugriff vorbereiten", "Prepare Word documents"), stages))
+                    documents = ((dynamic)application!).Documents;
                 // A deliberately wrong password makes protected files fail without a password prompt.
-                document = ((dynamic)documents).Open(FileName: input, ConfirmConversions: false, ReadOnly: true, AddToRecentFiles: false, PasswordDocument: Guid.NewGuid().ToString(), PasswordTemplate: Guid.NewGuid().ToString(), Visible: false, OpenAndRepair: false, NoEncodingDialog: true);
-                ((dynamic)document).ExportAsFixedFormat(OutputFileName: output, ExportFormat: 17, OpenAfterExport: false);
+                using (var timing = new MergeTiming(Language.Text("Worddatei öffnen", "Open Word file"), stages))
+                    document = ((dynamic)documents).Open(FileName: input, ConfirmConversions: false, ReadOnly: true, AddToRecentFiles: false, PasswordDocument: Guid.NewGuid().ToString(), PasswordTemplate: Guid.NewGuid().ToString(), Visible: false, OpenAndRepair: false, NoEncodingDialog: true);
+                using (var timing = new MergeTiming(Language.Text("Word als PDF exportieren", "Export Word to PDF"), stages))
+                    ((dynamic)document).ExportAsFixedFormat(OutputFileName: output, ExportFormat: 17, OpenAfterExport: false);
             }
             catch (COMException e) { throw new InvalidOperationException(Language.Text($"Word konnte „{Path.GetFileName(input)}“ nicht als PDF exportieren. Prüfe die Datei und die Word-Aktivierung. Geschützte Dateien werden nicht unterstützt.", $"Word could not export '{Path.GetFileName(input)}' to PDF. Check the file and Word activation. Protected files are not supported."), e); }
             finally
             {
-                if (document is not null) { try { ((dynamic)document).Close(SaveChanges: 0); } finally { Marshal.FinalReleaseComObject(document); } }
+                if (document is not null) { using var timing = new MergeTiming(Language.Text("Worddatei schließen", "Close Word file"), stages); try { ((dynamic)document).Close(SaveChanges: 0); } finally { Marshal.FinalReleaseComObject(document); } }
                 if (documents is not null) Marshal.FinalReleaseComObject(documents);
             }
         }
         public void Dispose()
         {
             if (application is null) return;
+            using var timing = new MergeTiming(Language.Text("Word beenden", "Quit Word"), stages);
             try { ((dynamic)application).Quit(SaveChanges: 0); }
             finally { Marshal.FinalReleaseComObject(application); application = null; }
         }

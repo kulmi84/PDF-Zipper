@@ -4,7 +4,7 @@
 Merge PDF files, combine documents and interleave scanned front and back pages directly in Windows 11 File Explorer with PDF-Zipper. Word documents and images can also be combined into a single PDF. Select at least two supported files in the same folder, right-click and choose an action from the PDF-Zipper submenu.
 
 Merge as PDF
-Combine PDF, Word (.doc/.docx), JPG/JPEG and PNG files in your chosen order. Word documents are exported using an installed desktop version of Microsoft Word. If Word is not installed, this action is disabled for selections containing Word documents; PDF and image merging work without Word. Each image is fitted proportionally onto an A4 page with 10 mm margins, including EXIF orientation. A compact progress window shows the current file during conversion.
+Combine PDF, Word (.doc/.docx), JPG/JPEG and PNG files in your chosen order. Word documents are exported using an installed desktop version of Microsoft Word. If Word is not installed, this action is disabled for selections containing Word documents; PDF and image merging work without Word. Each image is fitted proportionally onto an A4 page with 10 mm margins, including EXIF orientation. A compact progress window shows the current file, processing stage and elapsed time. Word export uses Microsoft Print to PDF within its own Word instance when available. Your Windows default printer stays unchanged.
 
 Interleave PDFs
 Scanned front and back pages separately? PDF-Zipper alternates front pages in their original order with back pages in reverse order. Select exactly two PDFs with equal page counts. Clear filenames and consecutive scan numbers help identify the front pages. When the choice is unclear, a compact dialog lets you select the front-page file.
@@ -20,3 +20,6 @@ Requirements: Windows 11 on an x64 PC. Word documents require installed and func
 
 ## Keywords
 pdf merge; combine PDFs; PDF interleave; reverse back pages; File Explorer; Word to PDF; images to PDF
+
+## New in 0.1.16
+Improved Word export avoids long waits caused by unreachable printers when Microsoft Print to PDF is available. The Windows default printer stays unchanged. Progress shows the current processing stage and elapsed time. Diagnostic logs are created only when explicitly requested. Continue combining Word documents, PDFs and images into one PDF.

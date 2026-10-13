@@ -93,7 +93,10 @@ try {
         bitmap.Save(imagePath, System.Drawing.Imaging.ImageFormat.Png);
     }
     var imageHash = SHA256.HashData(File.ReadAllBytes(imagePath));
-    var mixed = DocumentMerge.Merge([front, imagePath, back]);
+    var stages = new List<MergeStage>();
+    var mixed = DocumentMerge.Merge([front, imagePath, back], stages: stages.Add);
+    Assert(stages.Count == 8 && stages.Where(s => !s.Starting).All(s => s.ElapsedMilliseconds >= 0), "All mixed processing stages timed");
+    Assert(stages.Where((s,i) => i%2 == 0).All(s => s.Starting) && stages.Where((s,i) => i%2 == 1).All(s => !s.Starting), "Stage starts and completions paired");
     using (var merged = PdfReader.Open(mixed, PdfDocumentOpenMode.Import)) {
         Assert(merged.PageCount == 7, "PDF/image total pages");
         Assert(merged.Pages[0].Width.Point == 101 && merged.Pages[4].Width.Point == 106, "Mixed ordering preserved");
