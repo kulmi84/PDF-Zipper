@@ -20,6 +20,10 @@ Bei reiner PDF-Auswahl bleiben die bisherigen Funktionen erhalten. Andere Dateif
 
 ## Screenshots
 
+**Word, PDFs und Bilder gemeinsam als PDF zusammenführen:**
+
+![Worddateien, PDFs und JPG im Explorer gemeinsam als PDF zusammenführen](docs/screenshots/word-pdf-bilder-dark.png)
+
 Aktuelles Explorer-Menü und Dialoge unter Windows 11. Die Screenshots zeigen Testdateien und das helle sowie dunkle Windows-Design.
 
 ![PDF-Zipper im dunklen Explorer-Menü](docs/screenshots/menu-dark.png)
